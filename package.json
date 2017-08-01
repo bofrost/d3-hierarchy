@@ -27,8 +27,12 @@
   "scripts": {
     "pretest": "rm -rf build && mkdir build && rollup --banner \"$(preamble)\" -f umd -n d3 -o build/d3-hierarchy.js -- index.js",
     "test": "tape 'test/**/*-test.js' && eslint index.js src",
-    "prepublish": "npm run test && uglifyjs -b beautify=false,preamble=\"'$(preamble)'\" build/d3-hierarchy.js -c -m -o build/d3-hierarchy.min.js",
+    "buildts": "node_modules/typescript/bin/tsc src/pack/*.ts --allowJs --module es2015 --outDir src/pack/build",
+    "prepublish": "npm run buildts; npm run test && uglifyjs -b beautify=false,preamble=\"'$(preamble)'\" build/d3-hierarchy.js -c -m -o build/d3-hierarchy.min.js",
     "postpublish": "git push && git push --tags && cd ../d3.github.com && git pull && cp ../d3-hierarchy/build/d3-hierarchy.js d3-hierarchy.v1.js && cp ../d3-hierarchy/build/d3-hierarchy.min.js d3-hierarchy.v1.min.js && git add d3-hierarchy.v1.js d3-hierarchy.v1.min.js && git commit -m \"d3-hierarchy ${npm_package_version}\" && git push && cd - && zip -j build/d3-hierarchy.zip -- LICENSE README.md build/d3-hierarchy.js build/d3-hierarchy.min.js"
+  },
+  "dependencies": {
+    "d3-polygon": "1"
   },
   "devDependencies": {
     "benchmark": "^2.1.4",
@@ -40,6 +44,7 @@
     "package-preamble": "0.0",
     "rollup": "0.42",
     "tape": "4",
-    "uglify-js": "^3.0.15"
+    "uglify-js": "^3.0.15",
+    "typescript": "^2.4.2"
   }
 }

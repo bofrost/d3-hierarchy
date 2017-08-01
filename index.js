@@ -1,6 +1,13 @@
 export {default as cluster} from "./src/cluster";
 export {default as hierarchy} from "./src/hierarchy/index";
 export {default as pack} from "./src/pack/index";
+export {default as BinaryHeap} from "./src/pack/build/BinaryHeap";
+export {ConvexHull,Vertex} from "./src/pack/build/ConvexHull";
+export {default as d3} from "./src/pack/build/d3-polygon-clip";
+export {MedialAxisConvex} from "./src/pack/build/MedialAxisConvex";
+export {computePowerDiagramIntegrated} from "./src/pack/build/PowerDiagram";
+export {Point,Circle} from "./src/pack/build/Utils";
+export {VariationalDiskPackingAlgorithm} from "./src/pack/build/VariationalDiskPackingAlgorithm";
 export {default as packSiblings} from "./src/pack/siblings";
 export {default as packEnclose} from "./src/pack/enclose";
 export {default as partition} from "./src/partition";

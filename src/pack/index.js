@@ -1,6 +1,8 @@
 import {packEnclose} from "./siblings";
 import {optional} from "../accessors";
 import constant, {constantZero} from "../constant";
+import {VariationalDiskPackingAlgorithm} from "./build/VariationalDiskPackingAlgorithm"
+import {Vertex} from "./ConvexHull"
 
 function defaultRadius(d) {
   return Math.sqrt(d.value);
@@ -24,6 +26,14 @@ export default function() {
           .eachAfter(packChildren(padding, root.r / Math.min(dx, dy)))
           .eachBefore(translateChild(Math.min(dx, dy) / (2 * root.r)));
     }
+    return root;
+  }
+  pack.packVCT = function(root) {
+    root.x = dx / 2, root.y = dy / 2;
+    root.eachBefore(radiusLeaf(defaultRadius))
+      .eachAfter(optimizePacking);
+
+    root.eachBefore(translateChild(Math.min(dx, dy) / (2 * root.r)));
     return root;
   }
 
@@ -76,4 +86,57 @@ function translateChild(k) {
       node.y = parent.y + k * node.y;
     }
   };
+}
+function randomPacking(node) {
+  if (!node.children) return;
+  var sites = node.children,i;
+  node.r = 0;
+  for (i = 0; i < sites.length; i++) {
+    node.r += sites[i].r;
+  }
+  node.r *= 3;
+  for (i = 0; i < sites.length; i++) {
+    var isOverlaping, radiusOffset = node.r - sites[i].r;
+    do {
+      isOverlaping = false;
+      var t = 2 * Math.PI * Math.random()
+      var u = Math.random() + Math.random()
+      var r = u > 1 ? 2 - u : u;
+      sites[i].x = radiusOffset * r * Math.cos(t);
+      sites[i].y = radiusOffset * r * Math.sin(t);
+
+      for (var j = 0; j < i && !isOverlaping; j++) {
+        var x = sites[i].x - sites[j].x;
+        var y = sites[i].y - sites[j].y;
+        var rges = sites[i].r + sites[j].r;
+        isOverlaping = x * x + y * y < rges * rges;
+      }
+    } while (isOverlaping);
+
+  }
+}
+
+function optimizePacking(node) {
+  if (!node.children) return;
+  randomPacking(node);
+
+  var sites = node.children;
+
+  var formatedSites = sites.map(function (s) {
+    return new Vertex(s.x, s.y, null, s.r * s.r, s, false);
+  })
+
+
+  var vdpa = new VariationalDiskPackingAlgorithm(node.r);
+  vdpa.calculate(formatedSites);
+
+  var maxDist = 0;
+  for (var i = 0; i < formatedSites.length; i++) {
+    node.children[i].x = vdpa.formatedSites[i].x / vdpa.totalK;
+    node.children[i].y = vdpa.formatedSites[i].y / vdpa.totalK;
+    node.children[i].r = Math.sqrt(vdpa.formatedSites[i].weight) / vdpa.totalK;
+    maxDist = Math.max(maxDist, Math.sqrt(node.children[i].x * node.children[i].x + node.children[i].y * node.children[i].y) + node.children[i].r);
+  }
+  node.r /= vdpa.totalK;
+
 }
